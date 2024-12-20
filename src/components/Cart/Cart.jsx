@@ -1,13 +1,30 @@
-import classes from "./Css/Cart.module.css";
-import {useState} from "react";
+import classes from '../Cart/Css/Cart.module.css';
+import {useContext, useState} from "react";
 import Modal from "../UI/Modal.jsx";
+import CartContext from "../../store/cart-context.jsx";
+import CartItem from "../Cart/CartItem.jsx";
 
-export default function Cart({onCartClose }) {
-
+const Cart=({onCartClose })=> {
+const CartCtx = useContext(CartContext);
+    const totalAmount = `$${(CartCtx.totalAmount || 0).toFixed(2)}`;
+    const hasItems = CartCtx.items.length > 0;
+    const cartItemRemoveHandler = (id) => {
+        CartCtx.removeItem(id);
+    }
+    const cartItemAddHandler = (item) => {
+            CartCtx.addItem({...item ,amount: 1});
+    }
     const cartItems = (
         <ul className={classes['cart-items']}>
-            {[{id: 'c', name: 'Sushi', amount: 2, price: 12.99}].map((item) => (
-                <li key={item.id}>{item.name}</li>
+            {CartCtx.items.map((item) => (
+                <CartItem
+                    key={item.id}
+                    name={item.name}
+                    price={item.price}
+                    amount={item.amount}
+                    onRemove={cartItemRemoveHandler.bind(null, item.id)}
+                    onAdd={cartItemAddHandler.bind(null, item)}
+                />
             ))}
         </ul>
     );
@@ -17,12 +34,15 @@ export default function Cart({onCartClose }) {
             {cartItems}
             <div className={classes.total}>
                 <span>Total Amount</span>
-                <span>35.62</span>
+                <span>{totalAmount}</span>
             </div>
             <div className={classes.actions}>
                 <button className={classes['button--alt']} onClick={onCartClose}>Close</button>
-                <button className={classes.button}>Order</button>
+                {hasItems && <button className={classes.button}>Order</button>}
             </div>
         </Modal>
     );
 };
+
+
+export default Cart;
